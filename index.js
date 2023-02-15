@@ -8,7 +8,6 @@ import Router from "./Routes/router.js";
 import { Connection } from "./Database/db.js";
 //dotenv
 dotenv.config();
-
 const App = express();
 //middlewares
 App.use(cors());

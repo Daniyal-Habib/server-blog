@@ -7,6 +7,9 @@ const PostSchema = mongoose.Schema({
   author: {
     type: String,
   },
+  authorId: {
+    type: String,
+  },
   title: {
     type: String,
     required: true,

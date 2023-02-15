@@ -9,6 +9,7 @@ export const post = async (req, res) => {
     description,
     comments,
     author,
+    authorId,
     approved,
   } = req.body;
   const CreatedAt = Date.parse(req.body.CreatedAt);
@@ -21,6 +22,7 @@ export const post = async (req, res) => {
     description,
     comments,
     author,
+    authorId,
     approved,
   };
   const newPost = new PostModel(postData);
@@ -30,7 +32,9 @@ export const post = async (req, res) => {
       msg: "post added successfully!",
     });
   } catch (e) {
-    console.log(e);
+    return res.status(401).json({
+      msg: e.message,
+    });
   }
 };
 export const getLatestPosts = async (req, res) => {
@@ -49,7 +53,9 @@ export const getLatestPosts = async (req, res) => {
     }
     res.status(200).json(posts);
   } catch (e) {
-    console.log(e);
+    return res.status(401).json({
+      msg: e.message,
+    });
   }
 };
 export const getSubmittedPosts = async (req, res) => {
@@ -60,7 +66,9 @@ export const getSubmittedPosts = async (req, res) => {
     });
     res.status(200).json(posts);
   } catch (e) {
-    console.log(e);
+    return res.status(401).json({
+      msg: e.message,
+    });
   }
 };
 export const getPopularPosts = async (req, res) => {
@@ -84,11 +92,11 @@ export const getPopularPosts = async (req, res) => {
     console.log(e);
   }
 };
-export const getUserPosts = async (req, res) => {
+export const getUserSubmittedPosts = async (req, res) => {
   try {
     let posts;
-    let author = req.params.author;
-    posts = await PostModel.find({ author: author }).sort({
+    let authorId = req.params.authorId;
+    posts = await PostModel.find({ authorId: authorId }).sort({
       CreatedAt: "desc",
     });
     res.status(200).json(posts);
@@ -97,7 +105,7 @@ export const getUserPosts = async (req, res) => {
     console.log(e);
   }
 };
-export const getpostbyid = async (req, res) => {
+export const getPostbyid = async (req, res) => {
   try {
     const Post = await PostModel.findById(req.params.id);
     res.status(200).json(Post);
@@ -110,21 +118,26 @@ export const deletePost = async (req, res) => {
     await PostModel.findById(req.params.id).deleteOne();
     res.status(200).json("Postdeleted!");
   } catch (e) {
-    res.status(400).json("Post not found");
+    return res.status(401).json({
+      msg: e.message,
+    });
   }
 };
 export const getPostbyCategory = async (req, res) => {
   try {
     let posts;
+    let category = req.params.category;
     posts = await PostModel.find({
-      category: req.params.category,
+      category: category,
       approved: true,
     }).sort({
       CreatedAt: "desc",
     });
     res.status(200).json(posts);
   } catch (e) {
-    console.log(e);
+    return res.status(401).json({
+      msg: e.message,
+    });
   }
 };
 export const submitComment = async (req, res) => {
@@ -183,5 +196,17 @@ export const approvePost = async (req, res) => {
     res.status(200).json("success!");
   } catch (e) {
     res.status(400).json(e);
+  }
+};
+export const getUserPosts = async (req, res) => {
+  try {
+    let posts;
+    let author = req.query.user;
+    await PostModel.find({ author: author });
+    res.status(200).json(posts);
+  } catch (e) {
+    return res.status(401).json({
+      msg: e.message,
+    });
   }
 };
