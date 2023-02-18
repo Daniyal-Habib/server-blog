@@ -3,6 +3,7 @@ import {
   addView,
   approvePost,
   deletePost,
+  deletePostUser,
   getLatestPosts,
   getPopularPosts,
   getPostbyCategory,
@@ -23,6 +24,7 @@ Router.get("/posts/submitted/user/author/:authorId", getUserSubmittedPosts);
 Router.post("/popularposts", getPopularPosts);
 Router.get("/blog/:id", getPostbyid);
 Router.delete("/post/:id", deletePost);
+Router.delete("/post/user/delete/blog/:id", deletePostUser);
 Router.post("/post/:id", addView);
 Router.get("/posts/category/:category", getPostbyCategory);
 Router.post("/post/:id/new/comment", submitComment);

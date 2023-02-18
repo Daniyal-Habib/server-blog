@@ -49,7 +49,9 @@ export const getLatestPosts = async (req, res) => {
       posts = await PostModel.find({
         approved: true,
         category: category,
-      }).limit(10);
+      })
+        .sort({ CreatedAt: "desc" })
+        .limit(15);
     }
     res.status(200).json(posts);
   } catch (e) {
@@ -206,6 +208,18 @@ export const getUserPosts = async (req, res) => {
     res.status(200).json(posts);
   } catch (e) {
     return res.status(401).json({
+      msg: e.message,
+    });
+  }
+};
+export const deletePostUser = async (req, res) => {
+  try {
+    await PostModel.findById(req.params.id).deleteOne();
+    res.status(200).json({
+      msg: "Post deleted!",
+    });
+  } catch (e) {
+    res.status(404).json({
       msg: e.message,
     });
   }
