@@ -11,6 +11,7 @@ export const post = async (req, res) => {
     author,
     authorId,
     approved,
+    tags,
   } = req.body;
   const CreatedAt = Date.parse(req.body.CreatedAt);
   const postData = {
@@ -24,6 +25,7 @@ export const post = async (req, res) => {
     author,
     authorId,
     approved,
+    tags,
   };
   const newPost = new PostModel(postData);
   try {
@@ -105,6 +107,19 @@ export const getUserSubmittedPosts = async (req, res) => {
     console.log(posts);
   } catch (e) {
     console.log(e);
+  }
+};
+export const getBlogbyTag = async (req, res) => {
+  try {
+    let response;
+    let tag = req.params.tag;
+    let asd = "tags";
+    response = await PostModel.find({
+      tags: tag,
+    });
+    res.status(200).json(response);
+  } catch (e) {
+    res.status(400).json(e.message);
   }
 };
 export const getPostbyid = async (req, res) => {
@@ -191,6 +206,41 @@ export const addView = async (req, res) => {
     res.status(400).json(e);
   }
 };
+export const updateBlog = async (req, res) => {
+  try {
+    const {
+      image,
+      title,
+      body,
+      category,
+      description,
+      comments,
+      author,
+      authorId,
+      approved,
+      tags,
+    } = req.body;
+    const CreatedAt = Date.parse(req.body.CreatedAt);
+    const postData = {
+      image,
+      title,
+      body,
+      category,
+      CreatedAt,
+      description,
+      comments,
+      author,
+      authorId,
+      approved,
+      tags,
+    };
+    const id = req.params.id;
+    await PostModel.updateOne({ _id: id }, postData);
+    res.status(200).json("success!");
+  } catch (e) {
+    console.log(e.message);
+  }
+};
 export const approvePost = async (req, res) => {
   try {
     const id = req.params.id;
@@ -205,6 +255,21 @@ export const getUserPosts = async (req, res) => {
     let posts;
     let author = req.query.user;
     await PostModel.find({ author: author });
+    res.status(200).json(posts);
+  } catch (e) {
+    return res.status(401).json({
+      msg: e.message,
+    });
+  }
+};
+export const getAuthorBlogs = async (req, res) => {
+  try {
+    let author = req.params.author;
+    let posts = await PostModel.find({ author: author, approve: true })
+      .sort({
+        views: "descending",
+      })
+      .limit(4);
     res.status(200).json(posts);
   } catch (e) {
     return res.status(401).json({

@@ -46,6 +46,7 @@ const PostSchema = mongoose.Schema({
       },
     },
   ],
+  tags: [{ type: String }],
   commentslength: {
     type: Number,
   },
