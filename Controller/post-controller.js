@@ -9,6 +9,7 @@ export const post = async (req, res) => {
     description,
     comments,
     author,
+    authorImage,
     authorId,
     approved,
     tags,
@@ -23,6 +24,7 @@ export const post = async (req, res) => {
     description,
     comments,
     author,
+    authorImage,
     authorId,
     approved,
     tags,
@@ -116,7 +118,7 @@ export const getBlogbyTag = async (req, res) => {
     let asd = "tags";
     response = await PostModel.find({
       tags: tag,
-    });
+    }).sort({ CreatedAt: "descending" });
     res.status(200).json(response);
   } catch (e) {
     res.status(400).json(e.message);
@@ -166,6 +168,7 @@ export const submitComment = async (req, res) => {
         $push: {
           comments: {
             username: req.body.username,
+            userimage: req.body.userimage,
             comment: req.body.comment,
             date: new Date(),
           },
@@ -204,6 +207,25 @@ export const addView = async (req, res) => {
     res.status(200).json("success!");
   } catch (e) {
     res.status(400).json(e);
+  }
+};
+export const updateBlogAuthor = async (req, res) => {
+  try {
+    const { authorId, authorName, authorImage } = req.body;
+    await PostModel.updateMany(
+      {
+        authorId: authorId,
+      },
+      {
+        $set: {
+          author: authorName,
+          authorImage: authorImage,
+        },
+      }
+    );
+    res.status(200).json("success!");
+  } catch (e) {
+    console.error(e.message);
   }
 };
 export const updateBlog = async (req, res) => {
@@ -265,7 +287,7 @@ export const getUserPosts = async (req, res) => {
 export const getAuthorBlogs = async (req, res) => {
   try {
     let author = req.params.author;
-    let posts = await PostModel.find({ author: author, approve: true })
+    let posts = await PostModel.find({ author: author, approved: true })
       .sort({
         views: "descending",
       })

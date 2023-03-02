@@ -7,6 +7,9 @@ const PostSchema = mongoose.Schema({
   author: {
     type: String,
   },
+  authorImage: {
+    type: String,
+  },
   authorId: {
     type: String,
   },
@@ -35,6 +38,9 @@ const PostSchema = mongoose.Schema({
       username: {
         type: String,
         required: true,
+      },
+      userimage: {
+        type: String,
       },
       comment: {
         type: String,
