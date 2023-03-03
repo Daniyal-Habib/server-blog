@@ -167,6 +167,7 @@ export const submitComment = async (req, res) => {
       {
         $push: {
           comments: {
+            authorid: req.body.authorid,
             username: req.body.username,
             userimage: req.body.userimage,
             comment: req.body.comment,
@@ -223,10 +224,31 @@ export const updateBlogAuthor = async (req, res) => {
         },
       }
     );
-    res.status(200).json("success!");
+    res.status(200).json("response");
   } catch (e) {
     console.error(e.message);
   }
+};
+export const updateBlogAuthorinComments = async (req, res) => {
+  const { authorId, authorName, authorImage } = req.body;
+  let response = await PostModel.updateMany(
+    {},
+    {
+      $set: {
+        "comments.$[elm].username": authorName,
+        "comments.$[elm].userimage": authorImage,
+      },
+    },
+    {
+      multi: true,
+      arrayFilters: [
+        {
+          "elm.authorid": authorId,
+        },
+      ],
+    }
+  );
+  res.status(200).json(response.modifiedCount);
 };
 export const updateBlog = async (req, res) => {
   try {

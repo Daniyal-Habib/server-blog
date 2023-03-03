@@ -17,6 +17,7 @@ import {
   submitComment,
   updateBlog,
   updateBlogAuthor,
+  updateBlogAuthorinComments,
 } from "../Controller/post-controller.js";
 import { createUser } from "../Controller/user-controller.js";
 const Router = express.Router();
@@ -38,6 +39,7 @@ Router.get("/blog/tag/:tag", getBlogbyTag);
 Router.put("/blog/update/:id", updateBlog);
 Router.get("/blogs/author/:author", getAuthorBlogs);
 Router.post("/post/approve/:id", approvePost);
-Router.post("/blog/update", updateBlogAuthor);
+Router.put("/blog/update", updateBlogAuthor);
+Router.post("/blog/update/comments", updateBlogAuthorinComments);
 
 export default Router;

@@ -35,20 +35,21 @@ const PostSchema = mongoose.Schema({
   },
   comments: [
     {
-      username: {
+      authorid: {
         type: String,
         required: true,
+      },
+      username: {
+        type: String,
       },
       userimage: {
         type: String,
       },
       comment: {
         type: String,
-        required: true,
       },
       date: {
         type: Date,
-        required: true,
       },
     },
   ],
