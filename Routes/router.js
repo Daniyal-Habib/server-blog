@@ -1,4 +1,5 @@
 import express from "express";
+import { upload, uploadImage } from "../Cloudinary/Cloudinary.js";
 import {
   addView,
   approvePost,
@@ -6,6 +7,7 @@ import {
   deletePostUser,
   getAuthorBlogs,
   getBlogbyTag,
+  getBlogs,
   getLatestPosts,
   getPopularPosts,
   getPostbyCategory,
@@ -19,10 +21,12 @@ import {
   updateBlogAuthor,
   updateBlogAuthorinComments,
 } from "../Controller/post-controller.js";
-import { createUser } from "../Controller/user-controller.js";
+import { verifyToken } from "../FirebaseMiddleware.js";
 const Router = express.Router();
-Router.post("/createUser", createUser);
+Router.get("/get/all/blogs/:page/:limit", getBlogs);
+Router.post("/upload/image", upload.single("image"), uploadImage);
 Router.post("/create", post);
+Router.post("/admin", verifyToken);
 Router.post("/latestposts/", getLatestPosts);
 Router.get("/posts/submitted", getSubmittedPosts);
 Router.get("/posts/submitted/user/author/:authorId", getUserSubmittedPosts);
@@ -41,5 +45,4 @@ Router.get("/blogs/author/:author", getAuthorBlogs);
 Router.post("/post/approve/:id", approvePost);
 Router.put("/blog/update", updateBlogAuthor);
 Router.post("/blog/update/comments", updateBlogAuthorinComments);
-
 export default Router;

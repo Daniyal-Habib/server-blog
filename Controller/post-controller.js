@@ -1,10 +1,10 @@
 import PostModel from "../Model/Post.js";
-
+import sanitizeHtml from "sanitize-html";
+import Admin from "../firebaseAdmin.js";
 export const post = async (req, res) => {
   const {
     image,
     title,
-    body,
     category,
     description,
     comments,
@@ -15,6 +15,7 @@ export const post = async (req, res) => {
     tags,
   } = req.body;
   const CreatedAt = Date.parse(req.body.CreatedAt);
+  const body = sanitizeHtml(req.body.body);
   const postData = {
     image,
     title,
@@ -84,7 +85,9 @@ export const getPopularPosts = async (req, res) => {
     if (category === "") {
       posts = await PostModel.find({
         approved: true,
-      }).sort({ views: "desc" });
+      })
+        .sort({ views: "desc" })
+        .limit(10);
     } else {
       posts = await PostModel.find({
         approved: true,
@@ -96,6 +99,22 @@ export const getPopularPosts = async (req, res) => {
     res.status(200).json(posts);
   } catch (e) {
     console.log(e);
+  }
+};
+export const getBlogs = async (req, res) => {
+  try {
+    const pageOptions = {
+      page: parseInt(req.params.page, 10) || 0,
+      limit: parseInt(req.params.limit, 10) || 10,
+    };
+    let response = await PostModel.find({ approved: true })
+      .sort({ CreatedAt: "desc" })
+      .skip(pageOptions.page * pageOptions.limit)
+      .limit(pageOptions.limit);
+
+    res.status(200).json(response);
+  } catch (e) {
+    console.error(e.message);
   }
 };
 export const getUserSubmittedPosts = async (req, res) => {
@@ -118,6 +137,7 @@ export const getBlogbyTag = async (req, res) => {
     let asd = "tags";
     response = await PostModel.find({
       tags: tag,
+      approved: true,
     }).sort({ CreatedAt: "descending" });
     res.status(200).json(response);
   } catch (e) {
@@ -287,11 +307,16 @@ export const updateBlog = async (req, res) => {
 };
 export const approvePost = async (req, res) => {
   try {
-    const id = req.params.id;
-    await PostModel.updateOne({ _id: id }, { $set: { approved: true } });
-    res.status(200).json("success!");
+    let token = req.body.idToken;
+    const adminId = process.env.AdminId;
+    let decodedToken = await Admin.auth().verifyIdToken(token);
+    if (decodedToken.uid === adminId) {
+      const id = req.params.id;
+      await PostModel.updateOne({ _id: id }, { $set: { approved: true } });
+      res.status(200).json("success!");
+    }
   } catch (e) {
-    res.status(400).json(e);
+    res.status(400).json(e.message);
   }
 };
 export const getUserPosts = async (req, res) => {
@@ -309,11 +334,10 @@ export const getUserPosts = async (req, res) => {
 export const getAuthorBlogs = async (req, res) => {
   try {
     let author = req.params.author;
-    let posts = await PostModel.find({ author: author, approved: true })
-      .sort({
-        views: "descending",
-      })
-      .limit(4);
+    let posts = await PostModel.aggregate([
+      { $match: { author: author, approved: true } },
+      { $sample: { size: 4 } },
+    ]);
     res.status(200).json(posts);
   } catch (e) {
     return res.status(401).json({
