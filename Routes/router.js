@@ -7,6 +7,7 @@ import {
   deletePostUser,
   getAuthorBlogs,
   getBlogbyTag,
+  getBlogData_Edit,
   getBlogs,
   getLatestPosts,
   getPopularPosts,
@@ -16,6 +17,7 @@ import {
   getSubmittedPosts,
   getUserSubmittedPosts,
   post,
+  searchBlog,
   submitComment,
   updateBlog,
   updateBlogAuthor,
@@ -25,7 +27,7 @@ import { verifyToken } from "../FirebaseMiddleware.js";
 const Router = express.Router();
 Router.get("/get/all/blogs/:page/:limit", getBlogs);
 Router.post("/upload/image", upload.single("image"), uploadImage);
-Router.post("/create", post);
+Router.post("/create/:token", post);
 Router.post("/admin", verifyToken);
 Router.post("/latestposts/", getLatestPosts);
 Router.get("/posts/submitted", getSubmittedPosts);
@@ -40,9 +42,11 @@ Router.post("/post/:id/new/comment", submitComment);
 Router.get("/popular", getPostsbyPopularity);
 Router.get("/", getPostsbyPopularity);
 Router.get("/blog/tag/:tag", getBlogbyTag);
+Router.get("/blog/data/:id", getBlogData_Edit);
 Router.put("/blog/update/:id", updateBlog);
 Router.get("/blogs/author/:author", getAuthorBlogs);
 Router.post("/post/approve/:id", approvePost);
 Router.put("/blog/update", updateBlogAuthor);
 Router.post("/blog/update/comments", updateBlogAuthorinComments);
+Router.get("/search", searchBlog);
 export default Router;
