@@ -1,5 +1,6 @@
 import express from "express";
 import { upload, uploadImage } from "../Cloudinary/Cloudinary.js";
+import { sendEmail } from "../Controller/email-controller.js";
 import {
   addView,
   approvePost,
@@ -51,4 +52,5 @@ Router.put("/blog/update", updateBlogAuthor);
 Router.post("/blog/update/comments", updateBlogAuthorinComments);
 Router.get("/search", searchBlog);
 Router.get("/blogs/slider", sliderShowBlogs);
+Router.post("/sendEmail", sendEmail);
 export default Router;
