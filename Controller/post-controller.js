@@ -1,6 +1,7 @@
 import PostModel from "../Model/Post.js";
 import sanitizeHtml from "sanitize-html";
 import Admin from "../firebaseAdmin.js";
+import { verifyToken } from "../FirebaseMiddleware.js";
 export const post = async (req, res) => {
   const {
     image,
@@ -296,8 +297,12 @@ export const getBlogData_Edit = async (req, res) => {
 export const updateBlog = async (req, res) => {
   let id = req.params.id;
   let approved = await PostModel.find({ _id: id });
+  let token = req.params.idToken;
+  const adminId = process.env.AdminId;
+  let decodedToken = await Admin.auth().verifyIdToken(token);
+  const admin = decodedToken.uid === adminId;
   try {
-    if (approved[0].approved === false) {
+    if (approved[0].approved === false || admin) {
       const {
         image,
         title,
@@ -389,17 +394,26 @@ export const deletePostUser = async (req, res) => {
 export const searchBlog = async (req, res) => {
   try {
     let query = req.query.blogs;
-    let result = await PostModel.aggregate([
+    let result = await PostModel.find(
       {
-        $search: {
-          index: "blogs",
-          text: {
-            query: query,
-            path: ["title", "description", "tags"],
-          },
+        $text: {
+          $search: query,
         },
-      },
-    ]);
+      }
+      // {
+      //   $search: {
+      //     index: "blogs",
+      //     text: {
+      //       query: query,
+      //       path: ["title", "description", "tags"],
+      //     },
+      //   },
+      // },
+
+      // {
+      //   title: "text",
+      // }
+    );
     res.status(200).json(result);
   } catch (e) {
     console.error(e.message);
