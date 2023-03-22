@@ -16,9 +16,7 @@ export const post = async (req, res) => {
     tags,
   } = req.body;
   const CreatedAt = Date.parse(req.body.CreatedAt);
-  const body = sanitizeHtml(req.body.body, {
-    allowedTags: ["img"],
-  });
+  const body = req.body.body;
   const postData = {
     image,
     title,
@@ -285,9 +283,17 @@ export const updateBlogAuthorinComments = async (req, res) => {
 };
 export const getBlogData_Edit = async (req, res) => {
   try {
+    let token = req.params.idToken;
+    const adminId = process.env.AdminId;
+    const secondAdmin = process.env.AdminId2;
+
+    let decodedToken = await Admin.auth().verifyIdToken(token);
+    const admin = decodedToken.uid === adminId;
+    const adminId2 = decodedToken.uid === secondAdmin;
+
     let id = req.params.id;
     let result = await PostModel.find({ _id: id });
-    if (result[0].approved === false) {
+    if (result[0].approved === false || admin || adminId2) {
       res.status(200).json(result);
     } else res.status(404).json("Not Found");
   } catch (e) {
@@ -299,41 +305,26 @@ export const updateBlog = async (req, res) => {
   let approved = await PostModel.find({ _id: id });
   let token = req.params.idToken;
   const adminId = process.env.AdminId;
+  const secondAdmin = process.env.AdminId2;
+
   let decodedToken = await Admin.auth().verifyIdToken(token);
   const admin = decodedToken.uid === adminId;
+  const adminId2 = decodedToken.uid === secondAdmin;
   try {
-    if (approved[0].approved === false || admin) {
-      const {
-        image,
-        title,
-        body,
-        category,
-        description,
-        comments,
-        author,
-        authorId,
-        approved,
-        tags,
-      } = req.body;
-      const CreatedAt = Date.parse(req.body.CreatedAt);
+    if (approved[0].approved === false || admin || adminId2) {
+      const { image, title, body, category, description, tags } = req.body;
       const postData = {
         image,
         title,
         body,
         category,
-        CreatedAt,
         description,
-        comments,
-        author,
-        authorId,
-        approved,
         tags,
       };
       const id = req.params.id;
-      await PostModel.updateOne({ _id: id }, postData);
+      await PostModel.updateOne({ _id: id }, { $set: postData });
       res.status(200).json("success!");
     }
-    return approved;
   } catch (e) {
     console.log(e.message);
   }
