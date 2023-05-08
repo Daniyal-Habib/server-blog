@@ -1,7 +1,6 @@
 import PostModel from "../Model/Post.js";
-import sanitizeHtml from "sanitize-html";
 import Admin from "../firebaseAdmin.js";
-import { verifyToken } from "../FirebaseMiddleware.js";
+import { cache } from "./cache-controller.js";
 export const post = async (req, res) => {
   const {
     image,
@@ -36,8 +35,9 @@ export const post = async (req, res) => {
   try {
     let token = req.params.token;
     const adminId = process.env.AdminId;
+    const admin2Id = process.env.AdminId2;
     let decodedToken = await Admin.auth().verifyIdToken(token);
-    if (decodedToken.uid === adminId) {
+    if (decodedToken.uid === adminId || decodedToken.uid === admin2Id) {
       await adminPost.save();
       return res.status(200).json("success!");
     } else {
@@ -70,6 +70,50 @@ export const getLatestPosts = async (req, res) => {
         .limit(pageOptions.limit);
     }
 
+    res.status(200).json(response);
+  } catch (e) {
+    console.error(e.message);
+  }
+};
+export const getLatestBlogsForHomePage = async (req, res) => {
+  try {
+    let response;
+    let category = req.params.category;
+
+    if (category === "All") {
+      response = await PostModel.find({ approved: true })
+        .sort({
+          CreatedAt: "desc",
+        })
+        .limit(8);
+    } else {
+      response = await PostModel.find({ approved: true, category: category })
+        .sort({ CreatedAt: "desc" })
+        .limit(8);
+    }
+
+    res.status(200).json(response);
+  } catch (e) {
+    console.error(e.message);
+  }
+};
+export const getPopularBlogsForHomePage = async (req, res) => {
+  try {
+    let response;
+    let category = req.params.category;
+
+    if (category === "All") {
+      response = await PostModel.find({ approved: true })
+        .sort({
+          views: "desc",
+          commentslength: "desc",
+        })
+        .limit(8);
+    } else {
+      response = await PostModel.find({ approved: true, category: category })
+        .sort({ views: "desc", commentslength: "desc" })
+        .limit(8);
+    }
     res.status(200).json(response);
   } catch (e) {
     console.error(e.message);
@@ -156,8 +200,10 @@ export const getBlogbyTag = async (req, res) => {
   }
 };
 export const getPostbyid = async (req, res) => {
+  let id = req.params.id;
   try {
-    const Post = await PostModel.findById(req.params.id);
+    const Post = await PostModel.findById(id);
+    cache.set(id, Post);
     res.status(200).json(Post);
   } catch (e) {
     res.status(400).json("Post not found");
@@ -255,7 +301,7 @@ export const updateBlogAuthor = async (req, res) => {
         },
       }
     );
-    res.status(200).json("response");
+    res.status(200).json("Updated!");
   } catch (e) {
     console.error(e.message);
   }
@@ -323,6 +369,8 @@ export const updateBlog = async (req, res) => {
       };
       const id = req.params.id;
       await PostModel.updateOne({ _id: id }, { $set: postData });
+      cache.del(id);
+      cache.del("All");
       res.status(200).json("success!");
     }
   } catch (e) {
@@ -333,8 +381,9 @@ export const approvePost = async (req, res) => {
   try {
     let token = req.body.idToken;
     const adminId = process.env.AdminId;
+    const admin2Id = process.env.AdminId2;
     let decodedToken = await Admin.auth().verifyIdToken(token);
-    if (decodedToken.uid === adminId) {
+    if (decodedToken.uid === adminId || decodedToken.uid === admin2Id) {
       const id = req.params.id;
       await PostModel.updateOne({ _id: id }, { $set: { approved: true } });
       res.status(200).json("success!");
@@ -385,26 +434,11 @@ export const deletePostUser = async (req, res) => {
 export const searchBlog = async (req, res) => {
   try {
     let query = req.query.blogs;
-    let result = await PostModel.find(
-      {
-        $text: {
-          $search: query,
-        },
-      }
-      // {
-      //   $search: {
-      //     index: "blogs",
-      //     text: {
-      //       query: query,
-      //       path: ["title", "description", "tags"],
-      //     },
-      //   },
-      // },
-
-      // {
-      //   title: "text",
-      // }
-    );
+    let result = await PostModel.find({
+      $text: {
+        $search: query,
+      },
+    });
     res.status(200).json(result);
   } catch (e) {
     console.error(e.message);

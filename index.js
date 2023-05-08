@@ -7,15 +7,16 @@ import Router from "./Routes/router.js";
 import { Connection } from "./Database/db.js";
 dotenv.config();
 const App = express();
-var allowCrossDomain = function (req, res, next) {
-  res.header("Access-Control-Allow-Origin", ["https://www.hubblefeed.com"]);
-  res.header("Access-Control-Allow-Methods", "GET,PUT,POST,DELETE");
-  res.header("Access-Control-Allow-Headers", "Content-Type");
-  next();
-};
-App.use(allowCrossDomain);
-App.use(cors());
-
+App.use(
+  cors({
+    origin: [
+      "https://www.hubblefeed.com",
+      "http://localhost:5173",
+      "http://localhost:4173",
+    ],
+    methods: ["GET", "POST", "DELETE", "UPDATE", "PUT", "PATCH"],
+  })
+);
 App.use(helmet());
 App.use(express.json({ limit: "50mb" }));
 App.use(bodyParser.json({ limit: "50mb", extended: true }));

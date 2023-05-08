@@ -22,6 +22,7 @@ export const uploadImage = async (req, res) => {
       use_filename: true,
       unique_filename: false,
       overwrite: true,
+      secure: true,
     };
     const result = await cloudinary.uploader.upload(dataURI, options);
     res.status(200).json(result);

@@ -1,5 +1,7 @@
 import emailjs from "@emailjs/nodejs";
 import emailValidator from "deep-email-validator";
+import dotenv from "dotenv";
+dotenv.config();
 async function isEmailValid(email) {
   return emailValidator.validate(email);
 }
@@ -18,12 +20,12 @@ export const sendEmail = async (req, res) => {
 
     if (valid) {
       const response = await emailjs.send(
-        "service_65f7gtk",
-        "template_srlradf",
+        process.env.Email_Js_Service_key,
+        process.env.Email_Js_TemplateKey,
         form,
         {
-          publicKey: "7OJNnLHeiz7yvdsPZ",
-          privateKey: "w2OS0jmwakGLIF3KKOyTK",
+          publicKey: process.env.Email_Js_Public_key,
+          privateKey: process.env.Email_Js_Private_Key,
         }
       );
       return res.status(200).json(response.status);
